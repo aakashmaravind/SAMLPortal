@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Settings - SAML Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100">
+
+<div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md min-h-screen">
+        <div class="p-6 text-xl font-bold border-b">SAML Dashboard</div>
+        <nav class="mt-4">
+            <ul class="space-y-2">
+                <li><a href="home.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Profile</a></li>
+                <li><a href="subjects.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Subjects</a></li>
+                <li><a href="assignments.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Assignments</a></li>
+                <li><a href="attendance.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Attendance</a></li>
+                <li><a href="messages.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Messages</a></li>
+                <li><a href="settings.html" class="block py-2 px-4 text-blue-600 font-semibold bg-blue-100">Settings</a></li>
+                <li><a href="conversation.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Conversation</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold">Settings</h1>
+                <p class="text-sm text-gray-600">Logged in as <span id="userRoleHeader" class="font-semibold">Role</span></p>
+            </div>
+            <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </div>
+
+        <!-- Settings Form -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Settings</h2>
+            <form class="space-y-4">
+                <div>
+                    <label class="block font-medium">Update Email</label>
+                    <input type="email" class="w-full border p-2 rounded" placeholder="user@example.com">
+                </div>
+                <div>
+                    <label class="block font-medium">Change Password</label>
+                    <input type="password" class="w-full border p-2 rounded" placeholder="••••••••">
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Changes</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let user;
+      try {
+        user = JSON.parse(localStorage.getItem("loggedInUser"));
+      } catch (e) {
+        user = null;
+      }
+
+      if (!user || !user.name || !user.role) {
+        alert("Please login first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Fill role in header
+      document.getElementById("userRoleHeader").textContent = user.role;
+    });
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - SAML Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100">
+
+<div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md min-h-screen">
+        <div class="p-6 text-xl font-bold border-b">SAML Dashboard</div>
+        <nav class="mt-4">
+            <ul class="space-y-2">
+                <li><a href="home.html" class="block py-2 px-4 text-blue-600 font-semibold bg-blue-100">Profile</a></li>
+                <li><a href="subjects.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Subjects</a></li>
+                <li><a href="assignments.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Assignments</a></li>
+                <li><a href="attendance.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Attendance</a></li>
+                <li><a href="messages.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Messages</a></li>
+                <li><a href="settings.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Settings</a></li>
+                <li><a href="conversation.html" class="block py-2 px-4 text-gray-700 hover:bg-blue-100">Conversation</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold">Welcome <span id="userNameHeader">User</span>!</h1>
+                <p class="text-sm text-gray-600">Logged in as <span id="userRoleHeader" class="font-semibold">role</span></p>
+            </div>
+            <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="bg-white rounded-xl shadow-md p-8 max-w-4xl mx-auto">
+            <div class="flex items-center space-x-6 mb-6">
+                <div id="userIcon" class="w-24 h-24 rounded-full shadow flex items-center justify-center text-white text-7xl font-bold"></div>
+                <div>
+                    <h2 id="userNameCard" class="text-2xl font-bold text-gray-800">Name</h2>
+                    <p id="userRoleId" class="text-gray-500">Role | ID</p>
+                    <p id="userJoined" class="text-sm text-gray-400">Joined: Month Year</p>
+                </div>
+            </div>
+            <div id="userInfo" class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm text-gray-700"></div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let user;
+        try {
+            user = JSON.parse(localStorage.getItem("loggedInUser"));
+        } catch (e) {
+            user = null;
+        }
+
+        if (!user || !user.name || !user.role) {
+            alert("Please login first.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Header
+        document.getElementById("userNameHeader").textContent = user.name;
+        document.getElementById("userRoleHeader").textContent = user.role;
+
+        // Profile
+        document.getElementById("userNameCard").textContent = user.name;
+        document.getElementById("userRoleId").textContent = `${user.role} | ${user.id}`;
+        document.getElementById("userJoined").textContent = `Joined: ${user.joined || 'May 2024'}`;
+
+        // Role-based icon
+        const userIcon = document.getElementById("userIcon");
+        const role = user.role?.toLowerCase();
+        const roleIcons = {
+            student: { bg: "bg-blue-500", icon: "🎓" },
+            teacher: { bg: "bg-green-500", icon: "👩‍🏫" },
+            parent: { bg: "bg-purple-500", icon: "👨‍👧" },
+            admin: { bg: "bg-red-500", icon: "🛡️" },
+            default: { bg: "bg-gray-400", icon: "👤" }
+        };
+        const { bg, icon } = roleIcons[role] || roleIcons.default;
+        userIcon.classList.add(bg);
+        userIcon.textContent = icon;
+
+        // Add non-null fields dynamically
+        const infoContainer = document.getElementById("userInfo");
+        const fields = [
+            { label: "Email", value: user.email },
+            { label: "Phone", value: user.phone },
+            { label: "Department", value: user.department },
+            { label: "Semester", value: user.semester },
+            { label: "Child", value: user.child }
+        ];
+
+        fields.forEach(field => {
+            if (field.value) {
+                const div = document.createElement("div");
+                div.className = "bg-gray-50 p-4 rounded";
+                div.innerHTML = `<span class="font-semibold text-gray-600">${field.label}:</span><br>${field.value}`;
+                infoContainer.appendChild(div);
+            }
+        });
+    });
+
+    function logout() {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "login.html";
+    }
+</script>
+
+</body>
+</html>

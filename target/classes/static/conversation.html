@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Conversation - SAML Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md fixed top-0 left-0 h-screen z-10">
+        <div class="p-6 text-xl font-bold border-b">SAML Dashboard</div>
+        <nav class="mt-4">
+            <ul class="space-y-2">
+                <li><a href="home.html" class="block py-2 px-4 hover:bg-blue-100">Profile</a></li>
+                <li><a href="subjects.html" class="block py-2 px-4 hover:bg-blue-100">Subjects</a></li>
+                <li><a href="assignments.html" class="block py-2 px-4 hover:bg-blue-100">Assignments</a></li>
+                <li><a href="attendance.html" class="block py-2 px-4 hover:bg-blue-100">Attendance</a></li>
+                <li><a href="messages.html" class="block py-2 px-4 hover:bg-blue-100">Messages</a></li>
+                <li><a href="settings.html" class="block py-2 px-4 hover:bg-blue-100">Settings</a></li>
+                <li><a href="conversation.html" class="block py-2 px-4 bg-blue-100 font-semibold text-blue-600">Conversation</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 h-screen overflow-y-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold">Discussion Forum</h1>
+                <p class="text-sm text-gray-600">Interact with peers, teachers, or admins</p>
+            </div>
+            <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                Logout
+            </button>
+        </div>
+
+        <!-- New Post -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200">
+            <textarea id="newPost" rows="3" class="w-full border border-gray-300 focus:ring-2 focus:ring-blue-500 rounded-md p-3 shadow-sm" placeholder="Write a message..."></textarea>
+            <div class="flex justify-end mt-2">
+                <button onclick="addPost()" class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 font-medium transition">Post</button>
+            </div>
+        </div>
+
+        <!-- Posts -->
+        <div id="postList" class="space-y-6"></div>
+    </main>
+</div>
+
+<script>
+    let user;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        try {
+            user = JSON.parse(localStorage.getItem("loggedInUser"));
+        } catch (e) {
+            user = null;
+        }
+
+        if (!user || !user.name || !user.role) {
+            alert("Please login first.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        loadPosts();
+    });
+
+    function logout() {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "login.html";
+    }
+
+    async function loadPosts() {
+        try {
+            const res = await fetch("http://localhost:8080/conversation/all");
+            const posts = await res.json();
+            renderPosts(posts);
+        } catch (error) {
+            console.error("Error loading posts:", error);
+            alert("Failed to load posts.");
+        }
+    }
+
+    function renderPosts(posts) {
+        const postList = document.getElementById("postList");
+        postList.innerHTML = "";
+
+        posts.forEach((post, index) => {
+            const replyInputId = `replyInput-${index}`;
+            let html = `
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="bg-blue-500 text-white w-10 h-10 flex items-center justify-center rounded-full text-lg font-semibold">
+                        ${post.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">${post.username} <span class="text-sm text-gray-500">(${post.role})</span></p>
+                        <p class="text-xs text-gray-500">${formatDate(post.createdAt)}</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-4">${post.message}</p>
+
+                <div class="ml-4 mt-4 space-y-3">
+                    ${post.replies.map(reply => `
+                        <div class="bg-gray-50 p-3 rounded-lg border-l-4 border-green-400 shadow-sm">
+                            <p class="text-sm text-gray-600"><strong>${reply.username}</strong> (${reply.role}) <span class="text-xs text-gray-400">${formatDate(reply.createdAt)}</span></p>
+                            <p class="text-gray-700 mt-1">${reply.message}</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="mt-5 flex items-center space-x-2">
+                    <input id="${replyInputId}" class="flex-1 border border-gray-300 focus:ring-2 focus:ring-green-500 p-2 rounded-md shadow-sm" placeholder="Write a reply..." />
+                    <button onclick="submitReply('${post.id}', '${replyInputId}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md font-medium transition">Reply</button>
+                </div>
+            </div>`;
+            postList.innerHTML += html;
+        });
+    }
+
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleString();
+    }
+
+    async function addPost() {
+        const content = document.getElementById("newPost").value.trim();
+        if (!content) return;
+
+        const newPost = {
+            message: content,
+            userId: user.id
+        };
+
+        try {
+            const res = await fetch("http://localhost:8080/conversation/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newPost)
+            });
+
+            if (res.ok) {
+                document.getElementById("newPost").value = "";
+                loadPosts(); // Refresh posts
+            } else {
+                alert("Failed to create post");
+            }
+        } catch (error) {
+            console.error("Error posting message:", error);
+            alert("Error creating post.");
+        }
+    }
+
+    async function submitReply(parentId, inputId) {
+        const replyMessage = document.getElementById(inputId).value.trim();
+        if (!replyMessage) return;
+
+        const reply = {
+            message: replyMessage,
+            userId: user.id,
+            parentId: parentId
+        };
+
+        try {
+            const res = await fetch("http://localhost:8080/conversation/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(reply)
+            });
+
+            if (res.ok) {
+                document.getElementById(inputId).value = "";
+                loadPosts();
+            } else {
+                alert("Failed to post reply.");
+            }
+        } catch (error) {
+            console.error("Error posting reply:", error);
+            alert("Error posting reply.");
+        }
+    }
+</script>
+</body>
+</html>

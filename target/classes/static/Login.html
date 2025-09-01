@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SAML Portal Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        .role-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .role-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .role-card.selected {
+            border: 3px solid #3B82F6;
+            background: linear-gradient(135deg, #EBF4FF 0%, #DBEAFE 100%);
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            top: 10%;
+            left: 20%;
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 9999px;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            bottom: 15%;
+            right: 25%;
+            width: 64px;
+            height: 64px;
+            background: #bfdbfe;
+            border-radius: 1rem;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            top: 60%;
+            left: 10%;
+            width: 48px;
+            height: 48px;
+            background: #ddd6fe;
+            border-radius: 9999px;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(15deg);
+            }
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen flex items-center justify-center p-4 relative">
+
+<!-- Floating Shapes -->
+<div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+</div>
+
+<!-- Login Card -->
+<div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg relative z-10">
+    <div class="text-center mb-8">
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <i class="fas fa-graduation-cap text-4xl text-white"></i>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">🎓 SAML Portal</h1>
+        <p class="text-gray-600 text-lg">Smart Academic Management & Learning</p>
+        <div class="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mt-3 rounded-full"></div>
+    </div>
+
+    <!-- Role Selection -->
+    <div class="mb-6">
+        <label class="block text-sm font-semibold text-gray-700 mb-4 flex items-center">
+            <i class="fas fa-lock text-blue-600 mr-2"></i> Select Role:
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="role-card p-4 bg-white rounded-xl border-2 border-gray-200 text-center" onclick="selectRole('Student')">
+                <i class="fas fa-user-graduate text-2xl text-blue-600 mb-2"></i>
+                <p class="font-medium text-gray-800">Student</p>
+            </div>
+            <div class="role-card p-4 bg-white rounded-xl border-2 border-gray-200 text-center" onclick="selectRole('Teacher')">
+                <i class="fas fa-chalkboard-teacher text-2xl text-green-600 mb-2"></i>
+                <p class="font-medium text-gray-800">Teacher</p>
+            </div>
+            <div class="role-card p-4 bg-white rounded-xl border-2 border-gray-200 text-center" onclick="selectRole('Parent')">
+                <i class="fas fa-users text-2xl text-purple-600 mb-2"></i>
+                <p class="font-medium text-gray-800">Parent</p>
+            </div>
+            <div class="role-card p-4 bg-white rounded-xl border-2 border-gray-200 text-center" onclick="selectRole('Admin')">
+                <i class="fas fa-user-shield text-2xl text-red-600 mb-2"></i>
+                <p class="font-medium text-gray-800">Admin</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="space-y-5">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <i class="fas fa-user text-blue-600 mr-2"></i> Username
+            </label>
+            <input type="text" id="username"
+                   class="w-full p-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                   placeholder="Enter your username">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <i class="fas fa-key text-blue-600 mr-2"></i> Password
+            </label>
+            <input type="password" id="password"
+                   class="w-full p-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                   placeholder="Enter your password">
+        </div>
+
+        <div class="flex justify-between items-center pt-4">
+            <a href="#"
+               class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center transition duration-300">
+                <i class="fas fa-redo-alt mr-2"></i> Forgot Password?
+            </a>
+            <button onclick="login()"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-8 rounded-xl hover:from-blue-700 hover:to-purple-700 transition duration-300 font-semibold shadow-lg flex items-center">
+                <i class="fas fa-unlock mr-2"></i> Login Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    let selectedRole = "";
+
+    function selectRole(role) {
+        selectedRole = role;
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.classList.remove('selected');
+            if (card.innerText.toLowerCase().includes(role.toLowerCase())) {
+                card.classList.add('selected');
+            }
+        });
+    }
+
+    async function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!selectedRole) {
+            alert("❗ Please select a role.");
+            return;
+        }
+
+        if (!username || !password) {
+            alert("❗ Please enter both username and password.");
+            return;
+        }
+
+        const params = new URLSearchParams({
+            name: username,
+            password: password,
+            role: selectedRole
+        });
+
+        const loginUrl = `http://localhost:8080/api/login?${params.toString()}`;
+
+        try {
+            const response = await fetch(loginUrl, { method: 'POST' });
+            const data = await response.json();
+
+            if (response.ok && data.status === "success") {
+                localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+                window.location.href = `home.html?role=${selectedRole}&user=${encodeURIComponent(data.user.name)}`;
+            } else {
+                alert(`❌ Login Failed: ${data.message}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("⚠️ Server error. Please try again later.");
+        }
+    }
+</script>
+
+</body>
+</html>
